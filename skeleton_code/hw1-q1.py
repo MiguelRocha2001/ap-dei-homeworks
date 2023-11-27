@@ -46,7 +46,24 @@ class Perceptron(LinearModel):
         other arguments are ignored
         """
         # Q1.1a
-        raise NotImplementedError
+        
+        x_i_expanded = np.expand_dims(x_i, axis=0)
+
+        y_hat = np.argmax(self.W.dot(x_i_expanded.T))
+
+        #print(np.shape(w))
+        #print(np.shape(x_i))
+        #print(x_i)
+        #print(y_hat)
+        #print(y_i)
+        #print(x_i)
+        #print(self.W)
+
+        if y_hat != y_i:
+            self.W[y_i] += x_i
+            self.W[y_hat] -= x_i
+
+        #raise NotImplementedError
 
 
 class LogisticRegression(LinearModel):
@@ -126,13 +143,20 @@ def main():
 
     utils.configure_seed(seed=42)
 
-    add_bias = opt.model != "mlp"
+    add_bias = opt.model != "mlp"   
     data = utils.load_oct_data(bias=add_bias)
     train_X, train_y = data["train"]
     dev_X, dev_y = data["dev"]
     test_X, test_y = data["test"]
     n_classes = np.unique(train_y).size
     n_feats = train_X.shape[1]
+
+    print('Number of classes: ', n_classes)
+    print('Number of fetures: ', n_feats)
+    print('X shape: ', np.shape(train_X))
+    print('Y shape: ', np.shape(train_y))
+    print('Training X: ', train_X)
+    print('Training y: ', train_y)
 
     # initialize the model
     if opt.model == 'perceptron':

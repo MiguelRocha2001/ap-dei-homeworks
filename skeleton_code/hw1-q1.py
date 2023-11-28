@@ -83,9 +83,18 @@ class LogisticRegression(LinearModel):
         #print(one_hot_vector)
 
         # Computs probability vector
+        x_i_expanded = np.expand_dims(x_i, axis = 0)
+        Zx = np.sum(np.exp(x_i_expanded.dot(self.W.T)))
+
+        #print(Zx)
+
         probs = np.zeros(n_of_labels, )
         for index, w in enumerate(self.W):
-            probs[index] = 1 / (1 + np.exp(-w.dot(x_i.T)))
+            #w_expanded = np.expand_dims(w, axis = 1)
+            #print(x_i_expanded)
+            #print(w_expanded)
+            #raise NotImplementedError
+            probs[index] = np.exp(x_i.dot(w)) / Zx
 
         # Computs gradient
         aux_expanded = np.expand_dims(probs - one_hot_vector, axis=1)

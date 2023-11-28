@@ -74,7 +74,33 @@ class LogisticRegression(LinearModel):
         learning_rate (float): keep it at the default value for your plots
         """
         # Q1.1b
-        raise NotImplementedError
+        #print(self.W)
+
+        # Computing One Hot Vector
+        n_of_labels = np.shape(self.W)[0]
+        one_hot_vector = np.zeros(n_of_labels, )
+        one_hot_vector[y_i] = 1
+        #print(one_hot_vector)
+
+        # Computs probability vector
+        probs = np.zeros(n_of_labels, )
+        for index, w in enumerate(self.W):
+            probs[index] = 1 / (1 + np.exp(-w.dot(x_i.T)))
+
+        # Computs gradient
+        aux_expanded = np.expand_dims(probs - one_hot_vector, axis=1)
+        x_i_expanded = np.expand_dims(x_i, axis=0)
+        #print(aux_expanded)
+        #print(x_i_expanded)
+
+        gradient = aux_expanded.dot(x_i_expanded)
+        #print(gradient)
+
+        # Updates weights
+        self.W -= learning_rate * gradient
+        #print(self.W)
+
+        #raise NotImplementedError
 
 
 class MLP(object):
@@ -151,12 +177,14 @@ def main():
     n_classes = np.unique(train_y).size
     n_feats = train_X.shape[1]
 
+    '''
     print('Number of classes: ', n_classes)
     print('Number of fetures: ', n_feats)
     print('X shape: ', np.shape(train_X))
     print('Y shape: ', np.shape(train_y))
     print('Training X: ', train_X)
     print('Training y: ', train_y)
+    '''
 
     # initialize the model
     if opt.model == 'perceptron':

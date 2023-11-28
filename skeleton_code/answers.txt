@@ -1,0 +1,4 @@
+1.1.B:
+Comparar os dois gráficos permite deduzir que :
+O "stocastic gradient descent" faz com que o algorítmo , a cada época, possa melhorar ou piorar, visto que apenas temos o gradiente num ponto (x,y).
+A diferença de learning rate é notória por comparação. num dos gráficos a variação de resultados entre épocas é muito superior. Esta variação é diretamente proporcional à "learning rate". Quanto mais baixa for a learning rate mais consistente a progressão do algorítmo será

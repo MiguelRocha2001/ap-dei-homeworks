@@ -117,31 +117,140 @@ class MLP(object):
     # linear models with no changes to the training loop or evaluation code
     # in main().
     def __init__(self, n_classes, n_features, hidden_size):
-        # Initialize an MLP with a single hidden layer.
-        raise NotImplementedError
 
-    def predict(self, X):
+        # Initialize an MLP with a single hidden layer. 
+        self.B1 = np.zeros(hidden_size,)
+        
+        self.W2 = np.zeros((n_classes, hidden_size))
+        self.B2 = np.zeros(n_classes,)
+
+        mu = 0.1
+        sigma = 0.1**2
+        
+        # initialize W1
+        units = hidden_size * n_features
+        random = np.random.normal(mu, sigma, units)
+        desired_shape = (hidden_size, n_features)
+        self.W1 = random.reshape(desired_shape)
+        #print(self.W1)
+
+        # initialize W2
+        units = n_classes * hidden_size
+        random = np.random.normal(mu, sigma, units)
+        desired_shape = (n_classes, hidden_size)
+        self.W2 = random.reshape(desired_shape)
+        #print(self.W2)
+        
+        #raise NotImplementedError
+
+    def predict(self, X, save_values: bool):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        raise NotImplementedError
 
+        h0 = np.expand_dims(X, axis=1)
+
+        #print(np.expand_dims(h0, axis=1))
+        #print(np.shape(np.expand_dims(h0, axis=1)))
+        #print(np.shape(self.W1.T))
+
+        #print(self.W1.dot(np.expand_dims(h0, axis=1)))
+        #print(np.expand_dims(self.B1, axis=1))
+
+        z1 = self.W1.dot(h0) + np.expand_dims(self.B1, axis=1)
+        #print(z1)
+        h1 = np.maximum(0, z1)
+
+        #print(h1)
+
+        z2 = self.W2.dot(h1) + np.expand_dims(self.B2, axis=1)
+        h2 = z2
+
+        #print(h2)
+
+        if save_values:
+            self.h0 = h0
+            self.z1 = z1
+            self.h1 = h1
+            self.z2 = z2
+            self.h2 = h2
+
+        #raise NotImplementedError
+        return np.argmax(h2)
+    
     def evaluate(self, X, y):
         """
         X (n_examples x n_features)
         y (n_examples): gold labels
         """
         # Identical to LinearModel.evaluate()
-        y_hat = self.predict(X)
+        y_hat = self.predict(X, save_values=False)
         n_correct = (y == y_hat).sum()
         n_possible = y.shape[0]
         return n_correct / n_possible
 
+
+    # TODO: review softmax: is causing overflow
     def train_epoch(self, X, y, learning_rate=0.001):
         """
         Dont forget to return the loss of the epoch.
         """
-        raise NotImplementedError
+        i = 0
+        for x_i, y_i in zip(X, y):
+            self.predict(x_i, save_values=True)
+
+            one_hot_y = np.zeros(np.unique(y).size,)
+            one_hot_y[y_i] = 1
+        
+            # update weights
+            #print(one_hot_y)
+            #print(self.h2)
+
+            # compute softmax for predicted y
+            sum = np.sum(np.exp(self.h2))
+            p = np.exp(self.h2) / sum
+            #print(p)
+
+            loss = -np.sum(one_hot_y * np.log(p))
+            print(loss)
+
+            # backpropagation
+
+            # compute gradients
+            p_to_vector = p[1, :]
+            grad_z2 = np.expand_dims(p_to_vector - one_hot_y, axis=1)
+            #print(p_to_vector)
+            #print(one_hot_y)
+            #print(grad_z2)
+            grad_w2 = grad_z2.dot(self.h1.T)
+            grad_b2 = grad_z2
+
+            grad_h1 = self.W2.T.dot(grad_z2)
+            relu_derivated = np.where(self.z1 < 0, 0, 1)
+            grad_z1 = grad_h1 * relu_derivated
+            
+            grad_w1 = grad_z1.dot(self.h0.T)
+            grad_b1 = grad_z1
+
+            # update weights
+            self.W2 -= learning_rate * grad_w2
+            self.B2 -= learning_rate * grad_b2[1, :]
+
+            self.W1 -= learning_rate * grad_w1
+            self.B1 -= learning_rate * grad_b1[1, :]
+
+            print(self.W2)
+            print(self.B2)
+            #print(self.W1)
+            #print(self.B1)
+            
+            #print(np.shape(self.W1))
+            #print(np.shape(self.B1))
+
+            i += 1
+            if i == 50:
+                break
+
 
 
 def plot(epochs, train_accs, val_accs):

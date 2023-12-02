@@ -143,40 +143,33 @@ class MLP(object):
         
         #raise NotImplementedError
 
-    def predict(self, X, save_values: bool):
+    def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
 
-        h0 = np.expand_dims(X, axis=1)
+        H0 = X
 
-        #print(np.expand_dims(h0, axis=1))
-        #print(np.shape(np.expand_dims(h0, axis=1)))
-        #print(np.shape(self.W1.T))
+        #print(np.shape(H0))
+        #print(np.shape(self.W1))
 
-        #print(self.W1.dot(np.expand_dims(h0, axis=1)))
-        #print(np.expand_dims(self.B1, axis=1))
+        Z1 = self.W1.dot(H0.T) + np.expand_dims(self.B1, axis=1)
+        #print('JHBDCHSBHC')
+        #print(np.shape(Z1))
+        H1 = np.maximum(0, Z1)
+        #print(np.shape(H1))
 
-        z1 = self.W1.dot(h0) + np.expand_dims(self.B1, axis=1)
-        #print(z1)
-        h1 = np.maximum(0, z1)
-
-        #print(h1)
-
-        z2 = self.W2.dot(h1) + np.expand_dims(self.B2, axis=1)
-        h2 = z2
-
-        #print(h2)
-
-        if save_values:
-            self.h0 = h0
-            self.z1 = z1
-            self.h1 = h1
-            self.z2 = z2
-            self.h2 = h2
-
+        #print(np.shape(self.W2))
+        Z2 = self.W2.dot(H1) + np.expand_dims(self.B2, axis=1)
+        H2 = Z2
+        #print(np.shape(H2))
+        #print(H2)
+        
+        argmax = np.argmax(H2, axis=0)
+        #print(np.shape(argmax))
+        #print(argmax)
         #raise NotImplementedError
-        return np.argmax(h2)
+        return argmax
     
     def evaluate(self, X, y):
         """
@@ -184,7 +177,7 @@ class MLP(object):
         y (n_examples): gold labels
         """
         # Identical to LinearModel.evaluate()
-        y_hat = self.predict(X, save_values=False)
+        y_hat = self.predict(X)
         n_correct = (y == y_hat).sum()
         n_possible = y.shape[0]
         return n_correct / n_possible
@@ -195,24 +188,38 @@ class MLP(object):
         """
         Dont forget to return the loss of the epoch.
         """
+        learning_rate=0.00001
         i = 0
+        loss = 0
         for x_i, y_i in zip(X, y):
-            self.predict(x_i, save_values=True)
+            #print(np.shape(X))
+            #print(f"treino {np.shape(x_i)}")
+            #self.predict(x_i, save_values=True)
+
+            # foward pass
+            h0 = np.expand_dims(x_i, axis=1)
+            #print(self.W1.dot(h0))
+            z1 = self.W1.dot(h0) + np.expand_dims(self.B1, axis=1)
+            #print(z1)
+            h1 = np.maximum(0, z1)
+            z2 = self.W2.dot(h1) + np.expand_dims(self.B2, axis=1)
 
             one_hot_y = np.zeros(np.unique(y).size,)
             one_hot_y[y_i] = 1
         
             # update weights
             #print(one_hot_y)
-            #print(self.h2)
+            #print(z2)
 
             # compute softmax for predicted y
-            sum = np.sum(np.exp(self.h2))
-            p = np.exp(self.h2) / sum
+            sum = np.sum(np.exp(z2))
+            #print(sum)
+            p = np.exp(z2) / sum
             #print(p)
+            #print()
 
-            loss = -np.sum(one_hot_y * np.log(p))
-            print(loss)
+            loss += -np.sum(one_hot_y * np.log(p))
+            #print(loss)
 
             # backpropagation
 
@@ -222,14 +229,14 @@ class MLP(object):
             #print(p_to_vector)
             #print(one_hot_y)
             #print(grad_z2)
-            grad_w2 = grad_z2.dot(self.h1.T)
+            grad_w2 = grad_z2.dot(h1.T)
             grad_b2 = grad_z2
 
             grad_h1 = self.W2.T.dot(grad_z2)
-            relu_derivated = np.where(self.z1 < 0, 0, 1)
+            relu_derivated = np.where(z1 < 0, 0, 1)
             grad_z1 = grad_h1 * relu_derivated
             
-            grad_w1 = grad_z1.dot(self.h0.T)
+            grad_w1 = grad_z1.dot(h0.T)
             grad_b1 = grad_z1
 
             # update weights
@@ -238,9 +245,12 @@ class MLP(object):
 
             self.W1 -= learning_rate * grad_w1
             self.B1 -= learning_rate * grad_b1[1, :]
+            print(self.B1)
 
-            print(self.W2)
-            print(self.B2)
+            #print(self.W1)
+
+            #print(self.W2)
+            #print(self.B2)
             #print(self.W1)
             #print(self.B1)
             
@@ -248,8 +258,10 @@ class MLP(object):
             #print(np.shape(self.B1))
 
             i += 1
-            if i == 50:
+            if i == 3:
                 break
+
+        return loss / np.shape(X)[0]
 
 
 

@@ -6,6 +6,7 @@ import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 import utils
 
@@ -119,13 +120,13 @@ class MLP(object):
     def __init__(self, n_classes, n_features, hidden_size):
 
         # Initialize an MLP with a single hidden layer. 
-        self.B1 = np.zeros(hidden_size,)
+        self.b1 = np.zeros(hidden_size,)
         
         self.W2 = np.zeros((n_classes, hidden_size))
-        self.B2 = np.zeros(n_classes,)
+        self.b2 = np.zeros(n_classes,)
 
         mu = 0.1
-        sigma = 0.1**2
+        sigma = 0.1
         
         # initialize W1
         units = hidden_size * n_features
@@ -153,14 +154,14 @@ class MLP(object):
         #print(np.shape(H0))
         #print(np.shape(self.W1))
 
-        Z1 = self.W1.dot(H0.T) + np.expand_dims(self.B1, axis=1)
+        Z1 = self.W1.dot(H0.T) + np.expand_dims(self.b1, axis=1)
         #print('JHBDCHSBHC')
         #print(np.shape(Z1))
         H1 = np.maximum(0, Z1)
         #print(np.shape(H1))
 
         #print(np.shape(self.W2))
-        Z2 = self.W2.dot(H1) + np.expand_dims(self.B2, axis=1)
+        Z2 = self.W2.dot(H1) + np.expand_dims(self.b2, axis=1)
         H2 = Z2
         #print(np.shape(H2))
         #print(H2)
@@ -172,6 +173,7 @@ class MLP(object):
         return argmax
     
     def evaluate(self, X, y):
+        #print(np.shape(X))
         """
         X (n_examples x n_features)
         y (n_examples): gold labels
@@ -183,12 +185,11 @@ class MLP(object):
         return n_correct / n_possible
 
 
-    # TODO: review softmax: is causing overflow
     def train_epoch(self, X, y, learning_rate=0.001):
         """
         Dont forget to return the loss of the epoch.
         """
-        learning_rate=0.00001
+        #learning_rate=0.00001
         i = 0
         loss = 0
         for x_i, y_i in zip(X, y):
@@ -199,10 +200,16 @@ class MLP(object):
             # foward pass
             h0 = np.expand_dims(x_i, axis=1)
             #print(self.W1.dot(h0))
-            z1 = self.W1.dot(h0) + np.expand_dims(self.B1, axis=1)
+            z1 = self.W1.dot(h0) + np.expand_dims(self.b1, axis=1)
             #print(z1)
             h1 = np.maximum(0, z1)
-            z2 = self.W2.dot(h1) + np.expand_dims(self.B2, axis=1)
+            z2 = self.W2.dot(h1) + np.expand_dims(self.b2, axis=1)
+
+            if math.isnan(np.max(z2)):
+                print(self.W2.dot(h1))
+                print(np.expand_dims(self.b2, axis=1))
+                print(i)
+                raise Exception()
 
             one_hot_y = np.zeros(np.unique(y).size,)
             one_hot_y[y_i] = 1
@@ -212,54 +219,64 @@ class MLP(object):
             #print(z2)
 
             # compute softmax for predicted y
-            sum = np.sum(np.exp(z2))
+            #print(z2)
+            normalizer = (z2 - np.max(z2))
+            #print(normalizer)
+            #print(z2)
+            #raise NotImplementedError
+            
+            sum = np.sum(np.exp(normalizer))
             #print(sum)
-            p = np.exp(z2) / sum
+            p = (np.exp(normalizer) / sum)
             #print(p)
             #print()
 
-            loss += -np.sum(one_hot_y * np.log(p))
+            loss += -np.sum(one_hot_y * np.log(p + 10**-8))
             #print(loss)
 
             # backpropagation
 
             # compute gradients
-            p_to_vector = p[1, :]
+            p_to_vector = p.flatten().tolist()
+            #print(p_to_vector)
             grad_z2 = np.expand_dims(p_to_vector - one_hot_y, axis=1)
             #print(p_to_vector)
             #print(one_hot_y)
             #print(grad_z2)
-            grad_w2 = grad_z2.dot(h1.T)
-            grad_b2 = grad_z2
+            grad_W2 = grad_z2.dot(h1.T)
+            #print(h1.T)
+            grad_B2 = grad_z2
 
             grad_h1 = self.W2.T.dot(grad_z2)
+            #print(h1)
             relu_derivated = np.where(z1 < 0, 0, 1)
             grad_z1 = grad_h1 * relu_derivated
+            #print(grad_z1)
             
-            grad_w1 = grad_z1.dot(h0.T)
-            grad_b1 = grad_z1
+            grad_W1 = grad_z1.dot(h0.T)
+            grad_B1 = grad_z1
 
             # update weights
-            self.W2 -= learning_rate * grad_w2
-            self.B2 -= learning_rate * grad_b2[1, :]
+            self.W2 -= learning_rate * grad_W2
+            self.b2 -= learning_rate * grad_B2[1, :]
 
-            self.W1 -= learning_rate * grad_w1
-            self.B1 -= learning_rate * grad_b1[1, :]
-            print(self.B1)
-
-            #print(self.W1)
+            self.W1 -= learning_rate * grad_W1
+            self.b1 -= learning_rate * grad_B1[1, :]
 
             #print(self.W2)
-            #print(self.B2)
+            #print(self.b2)
             #print(self.W1)
-            #print(self.B1)
+            #print(self.b1)
             
             #print(np.shape(self.W1))
             #print(np.shape(self.B1))
 
+            '''
             i += 1
-            if i == 3:
+            if i == 8000:
                 break
+            '''
+            
 
         return loss / np.shape(X)[0]
 

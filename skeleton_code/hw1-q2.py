@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from matplotlib import pyplot as plt
+import time
 
 import utils
 
@@ -31,7 +32,7 @@ class LogisticRegression(nn.Module):
         # the super __init__ line, otherwise the magic doesn't work.
 
         # layer declaration
-        self.layer = nn.Linear(n_features, 4)
+        self.layer = nn.Linear(n_features, n_classes)
         
         # activation function
         self.activation = nn.Sigmoid()
@@ -85,8 +86,27 @@ class FeedforwardNetwork(nn.Module):
         includes modules for several activation functions and dropout as well.
         """
         super().__init__()
-        # Implement me!
-        raise NotImplementedError
+
+        # first hidden layer
+        self.first_hidden_layer = nn.Linear(n_features, hidden_size)
+
+        # other hidden layers 
+        self.other_hidden_layers = nn.ModuleList([nn.Linear(hidden_size, hidden_size) for _ in range(layers-1)])
+    
+        # output layer
+        self.output_layer = nn.Linear(hidden_size, n_classes) 
+
+
+        if activation_type == 'relu':
+            self.activation = nn.ReLU()
+        elif activation_type == 'tanh':
+            self.activation = nn.Tanh()
+        else:
+            raise NotImplementedError
+        
+        self.dropout = nn.Dropout(p=dropout)
+
+        #raise NotImplementedError
 
     def forward(self, x, **kwargs):
         """
@@ -96,7 +116,26 @@ class FeedforwardNetwork(nn.Module):
         the output logits from x. This will include using various hidden
         layers, pointwise nonlinear functions, and dropout.
         """
-        raise NotImplementedError
+
+        z = self.first_hidden_layer(x)
+        p = self.activation(z)
+        
+        if self.training:
+            p = self.dropout(p)
+
+        for hidden_layer in self.other_hidden_layers:
+            z = hidden_layer(p)
+            p = self.activation(z)
+           
+            if self.training:
+                p = self.dropout(p)
+        
+        z = self.output_layer(p)
+        p = self.activation(z)
+
+        return p
+
+        #raise NotImplementedError
 
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
@@ -312,4 +351,10 @@ def main():
 
 
 if __name__ == '__main__':
+    start_time = time.time()
+
     main()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed Time: {elapsed_time} seconds")

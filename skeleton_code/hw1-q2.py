@@ -30,6 +30,13 @@ class LogisticRegression(nn.Module):
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
 
+        # layer declaration
+        self.layer = nn.Linear(n_features, 4)
+        
+        # activation function
+        self.activation = nn.Sigmoid()
+
+
     def forward(self, x, **kwargs):
         """
         x (batch_size x n_features): a batch of training examples
@@ -44,7 +51,20 @@ class LogisticRegression(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        raise NotImplementedError
+
+        #print(x.shape)
+        #print(x)
+
+        Z = self.layer(x)
+        P = self.activation(Z)
+        #print(P)
+        #P = Z
+        
+        #P = P.view(x.shape[0], )
+
+        return P
+
+        #raise NotImplementedError
 
 
 # Q2.2
@@ -97,7 +117,29 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     This function should return the loss (tip: call loss.item()) to get the
     loss as a numerical value that is not part of the computation graph.
     """
-    raise NotImplementedError
+
+    # clear the gradients
+    optimizer.zero_grad()
+
+    # compute the model output
+    y_hat = model(X)
+    #y = y.float()
+    
+    #print(y_hat)
+    #print(y)
+
+    # calculate loss
+    loss = criterion(y_hat, y)
+
+    # credit assigment
+    loss.backward()
+
+    # update model weights
+    optimizer.step()
+
+    return loss.item()
+
+    #raise NotImplementedError
 
 
 def predict(model, X):
@@ -113,12 +155,27 @@ def evaluate(model, X, y, criterion):
     X (n_examples x n_features)
     y (n_examples): gold labels
     """
+
+    #y = y.float()
+
+    #print(X)
+    #print(y)
+
+    #print(y.shape)
+
     model.eval()
     logits = model(X)
+    #print(logits)
+    #print(logits.shape)
+
     loss = criterion(logits, y)
     loss = loss.item()
+    #print(logits.shape)
     y_hat = logits.argmax(dim=-1)
-    n_correct = (y == y_hat).sum().item()
+    #print(y_hat)
+    #print(y.shape)
+    n_correct = (y.int() == y_hat).sum().item()
+    #print(n_correct)
     n_possible = float(y.shape[0])
     model.train()
     return loss, n_correct / n_possible
@@ -168,6 +225,8 @@ def main():
         dataset, batch_size=opt.batch_size, shuffle=True, generator=torch.Generator().manual_seed(42))
 
     dev_X, dev_y = dataset.dev_X, dataset.dev_y
+    #print(dev_X.shape),
+    #print(dev_y)
     test_X, test_y = dataset.test_X, dataset.test_y
 
     n_classes = torch.unique(dataset.y).shape[0]  # 10

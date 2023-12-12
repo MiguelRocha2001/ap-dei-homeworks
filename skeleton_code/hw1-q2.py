@@ -63,7 +63,7 @@ class LogisticRegression(nn.Module):
         
         #P = P.view(x.shape[0], )
 
-        return P
+        return Z
 
         #raise NotImplementedError
 
@@ -131,7 +131,7 @@ class FeedforwardNetwork(nn.Module):
                 p = self.dropout(p)
         
         z = self.output_layer(p)
-        p = self.activation(z)
+        #p = self.activation(z)
 
         return p
 

@@ -191,7 +191,7 @@ class MLP(object):
         """
         #learning_rate=0.00001
         i = 0
-        loss = 0
+        epoch_loss = []
         for x_i, y_i in zip(X, y):
             #print(np.shape(X))
             #print(f"treino {np.shape(x_i)}")
@@ -231,7 +231,8 @@ class MLP(object):
             #print(p)
             #print()
 
-            loss += -np.sum(one_hot_y * np.log(p + 10**-8))
+            loss = -np.sum(one_hot_y * np.log(p + 10**-8))
+            epoch_loss.append(loss)
             #print(loss)
 
             # backpropagation
@@ -273,12 +274,11 @@ class MLP(object):
 
             '''
             i += 1
-            if i == 8000:
+            if i == 3000:
                 break
             '''
-            
 
-        return loss / np.shape(X)[0]
+        return np.mean(epoch_loss)
 
 
 
@@ -341,6 +341,7 @@ def main():
     else:
         model = MLP(n_classes, n_feats, opt.hidden_size)
     epochs = np.arange(1, opt.epochs + 1)
+    #epochs = np.arange(1, 5)
     train_loss = []
     valid_accs = []
     train_accs = []

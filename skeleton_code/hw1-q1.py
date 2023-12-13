@@ -324,14 +324,14 @@ def main():
     n_classes = np.unique(train_y).size
     n_feats = train_X.shape[1]
 
-    '''
+    
     print('Number of classes: ', n_classes)
     print('Number of fetures: ', n_feats)
     print('X shape: ', np.shape(train_X))
     print('Y shape: ', np.shape(train_y))
     print('Training X: ', train_X)
     print('Training y: ', train_y)
-    '''
+    print('size:', np.shape(train_X))
 
     # initialize the model
     if opt.model == 'perceptron':

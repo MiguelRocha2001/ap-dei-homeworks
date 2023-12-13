@@ -60,4 +60,4 @@ Training epoch 20
 Training loss: 0.8711
 Valid acc: 0.6956
 Final Test acc: 0.7278
-Elapsed Time: 30.37737250328064 seconds
+Elapsed Time: 33.483755111694336 seconds

@@ -27,7 +27,7 @@ class LogisticRegression(nn.Module):
         pytorch to make weights and biases, have a look at
         https://pytorch.org/docs/stable/nn.html
         """
-        super().__init__()
+        super(LogisticRegression, self).__init__()
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
 
@@ -85,7 +85,7 @@ class FeedforwardNetwork(nn.Module):
         attributes that each FeedforwardNetwork instance has. Note that nn
         includes modules for several activation functions and dropout as well.
         """
-        super().__init__()
+        super(FeedforwardNetwork, self).__init__()
 
         # first hidden layer
         self.first_hidden_layer = nn.Linear(n_features, hidden_size)
@@ -344,7 +344,7 @@ def main():
     if opt.model == "logistic_regression":
         ylim = (0., 1.6)
     elif opt.model == "mlp":
-        ylim = (0., 1.2)
+        ylim = (0., 1.3)
     else:
         raise ValueError(f"Unknown model {opt.model}")
     plot(epochs, losses, name=f'{opt.model}-training-loss-{config}', ylim=ylim)

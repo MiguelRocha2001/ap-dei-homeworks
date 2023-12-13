@@ -133,7 +133,9 @@ class FeedforwardNetwork(nn.Module):
         z = self.output_layer(p)
         #p = self.activation(z)
 
-        return p
+        #print(z)
+
+        return z
 
         #raise NotImplementedError
 

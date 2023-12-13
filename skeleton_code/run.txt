@@ -1,5 +1,10 @@
 python3 hw1-q1.py perceptron
 
+Q 2.1
 python3 hw1-q2.py logistic_regression -epochs 20 -batch_size 16 -optimizer sgd -learning_rate 0.001
 
+Q 2.2.a
 python3 hw1-q2.py mlp -epochs 20 -batch_size 16 -optimizer sgd -learning_rate 0.1 -activation relu -dropout 0 -hidden_size 200 -layer 2 -l2_decay 0.0
+
+Q 2.2.c
+python3 hw1-q2.py mlp -epochs 150 -batch_size 256 -optimizer sgd -learning_rate 0.1 -activation relu -dropout 0 -hidden_size 200 -layer 2 -l2_decay 0.0

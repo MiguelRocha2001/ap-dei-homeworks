@@ -1,0 +1,55 @@
+C:\Users\migas\Desktop\ap-dei-homeworks\skeleton_code>python hw1-q1.py mlp
+Number of classes:  4
+Number of fetures:  784
+X shape:  (97477, 784)
+Y shape:  (97477,)
+Training X:  [[0.08984375 0.09375    0.09765625 ... 0.046875   0.0546875  0.0546875 ]
+ [0.1328125  0.12890625 0.12109375 ... 0.0546875  0.0546875  0.05078125]
+ [0.671875   0.65625    0.62890625 ... 0.04296875 0.04296875 0.04296875]
+ ...
+ [0.13671875 0.16015625 0.203125   ... 0.0546875  0.0546875  0.0546875 ]
+ [0.109375   0.10546875 0.109375   ... 0.0390625  0.0390625  0.03515625]
+ [0.10546875 0.10546875 0.10546875 ... 0.99609375 0.99609375 0.99609375]]
+Training y:  [0 3 3 ... 0 3 0]
+size: (97477, 784)
+Training epoch 1
+loss: 25.2453 | train acc: 0.4782 | val acc: 0.4802
+Training epoch 2
+loss: 8.6217 | train acc: 0.6524 | val acc: 0.6488
+Training epoch 3
+loss: 8.1703 | train acc: 0.6629 | val acc: 0.6647
+Training epoch 4
+loss: 8.2357 | train acc: 0.6726 | val acc: 0.6660
+Training epoch 5
+loss: 8.3995 | train acc: 0.6867 | val acc: 0.6868
+Training epoch 6
+loss: 8.6207 | train acc: 0.7105 | val acc: 0.7103
+Training epoch 7
+loss: 8.8812 | train acc: 0.7251 | val acc: 0.7223
+Training epoch 8
+loss: 9.1755 | train acc: 0.7330 | val acc: 0.7302
+Training epoch 9
+loss: 9.4541 | train acc: 0.7413 | val acc: 0.7377
+Training epoch 10
+loss: 9.7071 | train acc: 0.7542 | val acc: 0.7481
+Training epoch 11
+loss: 9.9392 | train acc: 0.7626 | val acc: 0.7589
+Training epoch 12
+loss: 10.1087 | train acc: 0.7646 | val acc: 0.7613
+Training epoch 13
+loss: 10.2823 | train acc: 0.7663 | val acc: 0.7582
+Training epoch 14
+loss: 10.4596 | train acc: 0.7684 | val acc: 0.7619
+Training epoch 15
+loss: 10.5972 | train acc: 0.7769 | val acc: 0.7673
+Training epoch 16
+loss: 10.7221 | train acc: 0.7786 | val acc: 0.7686
+Training epoch 17
+loss: 10.8451 | train acc: 0.7876 | val acc: 0.7763
+Training epoch 18
+loss: 11.0019 | train acc: 0.7771 | val acc: 0.7671
+Training epoch 19
+loss: 11.1170 | train acc: 0.7868 | val acc: 0.7785
+Training epoch 20
+loss: 11.2327 | train acc: 0.7950 | val acc: 0.7844
+Final test acc: 0.7467

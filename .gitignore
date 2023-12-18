@@ -1,2 +1,4 @@
-skeleton_code/octmnist.npz
-skeleton_code/__pycache__
+*.npz
+
+hw1/skeleton_code/__pycache__
+hw2/skeleton_code/__pycache__

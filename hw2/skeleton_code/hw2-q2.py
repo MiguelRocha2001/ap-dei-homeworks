@@ -22,35 +22,62 @@ class CNN(nn.Module):
         self.no_maxpool = no_maxpool
         if not no_maxpool:
             # Implementation for Q2.1
-            raise NotImplementedError
+            self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.fc1 = nn.Linear(in_features=16*11*11, out_features=320)
+            #raise NotImplementedError
         else:
             # Implementation for Q2.2
             raise NotImplementedError
         
         # Implementation for Q2.1 and Q2.2
-        raise NotImplementedError
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1)
+        self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=0)
+        self.drop = nn.Dropout(p=0.7)
+        self.fc2 = nn.Linear(in_features=320, out_features=120)
+        self.fc3 = nn.Linear(in_features=120, out_features=10)
+        #raise NotImplementedError
         
     def forward(self, x):
         # input should be of shape [b, c, w, h]
+        x = x.reshape((x.shape[0], 1, 28, 28))
+
         # conv and relu layers
+        x = F.relu(self.conv1(x))
+        
+        # Convolution with 3x3 filter with padding and 8 channels =>
+        #     x.shape = [8, 8, 26, 26] since 26 = 28 - 3 + 1
 
         # max-pool layer if using it
         if not self.no_maxpool:
+            x = self.max_pool(x)
+            # Max pooling with stride of 2 =>
+            #     x.shape = [8, 8, 13, 13]
             raise NotImplementedError
         
         # conv and relu layers
-        
+        x = F.relu(self.conv2(x))
+
+        # With max pool:
+        #   Convolution with 3x3 filter with padding and 8 channels =>
+        #         x.shape = [8, 16, 11, 11] since 11 = 13 - 3 + 1
+        # Without max pool:
+        #   Convolution with 3x3 filter with padding and 8 channels =>
+        #         x.shape = [8, 16, 24, 24] since 24 = 26 - 3 + 1
 
         # max-pool layer if using it
         if not self.no_maxpool:
+            x = self.max_pool(x)
             raise NotImplementedError
         
         # prep for fully connected layer + relu
+        x = x.view(-1, x.shape[0]*x.shape[1]*x.shape[2]*x.shape[3])
+        x = F.relu(self.fc1(x))
         
         # drop out
         x = self.drop(x)
 
         # second fully connected layer + relu
+        x = F.relu(self.fc2(x))
         
         # last fully connected layer
         x = self.fc3(x)
@@ -65,6 +92,11 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     optimizer: optimizer used in gradient step
     criterion: loss function
     """
+    print(X.shape)
+    print(y.shape)
+    print(X)
+    print(y)
+
     optimizer.zero_grad()
     out = model(X, **kwargs)
     loss = criterion(out, y)

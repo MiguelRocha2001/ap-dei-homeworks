@@ -16,71 +16,90 @@ import numpy as np
 import utils
 
 class CNN(nn.Module):
+    # Output width = ((input width − kernel width + 2 × padding width) / stride) + 1
     
     def __init__(self, dropout_prob, no_maxpool=False):
         super(CNN, self).__init__()
         self.no_maxpool = no_maxpool
         if not no_maxpool:
             # Implementation for Q2.1
+            self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1)
+            self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=0)
             self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
-            self.fc1 = nn.Linear(in_features=16*11*11, out_features=320)
+            self.fc1 = nn.Linear(in_features=16*6*6, out_features=320)
             #raise NotImplementedError
         else:
             # Implementation for Q2.2
-            raise NotImplementedError
+            self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=2, padding=1)
+            self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=2, padding=0)
+            self.fc1 = nn.Linear(in_features=16*1*2, out_features=320)
+            #raise NotImplementedError
         
         # Implementation for Q2.1 and Q2.2
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1)
-        self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=0)
-        self.drop = nn.Dropout(p=0.7)
+        
+        self.drop = nn.Dropout(p=dropout_prob)
         self.fc2 = nn.Linear(in_features=320, out_features=120)
         self.fc3 = nn.Linear(in_features=120, out_features=10)
         #raise NotImplementedError
         
     def forward(self, x):
+        # initial shape: [8, 1, 28, 28]
+        #print('Initial shape: ', x.shape)
+
         # input should be of shape [b, c, w, h]
+
         x = x.reshape((x.shape[0], 1, 28, 28))
+        #print('Second shape: ', x.shape)
 
         # conv and relu layers
         x = F.relu(self.conv1(x))
+        #print('Third shape: ', x.shape)
         
-        # Convolution with 3x3 filter with padding and 8 channels =>
-        #     x.shape = [8, 8, 26, 26] since 26 = 28 - 3 + 1
-
+        # Convolution with 3x3 filter with padding (1) and 8 channels =>
+        #    x.shape = [8, 8, 28, 28] since 28 = 28 - 3 + 1 + 2 * 1
+        #    x.shape = [8, 8, _, _] since 28 = ((28 - 3 + 2 * 1) / 2) + 1
         # max-pool layer if using it
         if not self.no_maxpool:
             x = self.max_pool(x)
+            #print('Forth shape: ', x.shape)
             # Max pooling with stride of 2 =>
-            #     x.shape = [8, 8, 13, 13]
-            raise NotImplementedError
+            #     x.shape = [8, 8, 14, 14]
+            #raise NotImplementedError
         
         # conv and relu layers
         x = F.relu(self.conv2(x))
-
+        #print('Fiveth shape: ', x.shape)
         # With max pool:
         #   Convolution with 3x3 filter with padding and 8 channels =>
-        #         x.shape = [8, 16, 11, 11] since 11 = 13 - 3 + 1
+        #         x.shape = [8, 16, 12, 12] since 12
         # Without max pool:
         #   Convolution with 3x3 filter with padding and 8 channels =>
-        #         x.shape = [8, 16, 24, 24] since 24 = 26 - 3 + 1
+        #         x.shape = [8, 16, 28, 28] since _ = ((28 - 3 + 2 * 0) / 2) + 1
 
         # max-pool layer if using it
         if not self.no_maxpool:
             x = self.max_pool(x)
-            raise NotImplementedError
+            #print('Sixth shape: ', x.shape)
+            # Max pooling with stride of 2 =>
+            #     x.shape = [8, 8, 6, 6]
+            #raise NotImplementedError
         
         # prep for fully connected layer + relu
-        x = x.view(-1, x.shape[0]*x.shape[1]*x.shape[2]*x.shape[3])
+        x = x.view(-1, x.shape[1]*x.shape[2]*x.shape[3])
         x = F.relu(self.fc1(x))
+        #print('Sevend shape: ', x.shape)
         
         # drop out
         x = self.drop(x)
+        #print('Eight shape: ', x.shape)
 
         # second fully connected layer + relu
         x = F.relu(self.fc2(x))
+        #print('Nineth shape: ', x.shape)
         
         # last fully connected layer
         x = self.fc3(x)
+        #print('Semi-final shape: ', x.shape)
         
         return F.log_softmax(x,dim=1)
 
@@ -92,10 +111,10 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     optimizer: optimizer used in gradient step
     criterion: loss function
     """
-    print(X.shape)
-    print(y.shape)
-    print(X)
-    print(y)
+    #print(X.shape)
+    #print(y.shape)
+    #print(X)
+    #print(y)
 
     optimizer.zero_grad()
     out = model(X, **kwargs)
@@ -133,9 +152,14 @@ def plot(epochs, plottable, ylabel='', name=''):
     plt.savefig('%s.pdf' % (name), bbox_inches='tight')
 
 
+# Number of trainable weights = Number of filters × ((kernel width × kernel height ×
+# number of channels) + bias)
 def get_number_trainable_params(model):
     ## TO IMPLEMENT - REPLACE return 0
-    return 0
+    model_parameters_cnn = filter(lambda p: p.requires_grad, model.parameters())
+    params_cnn = sum([np.prod(p.size()) for p in model_parameters_cnn])
+    #print('Number of parameters in the CNN model: {}'.format(params_cnn))
+    return params_cnn
 
 
 def main():

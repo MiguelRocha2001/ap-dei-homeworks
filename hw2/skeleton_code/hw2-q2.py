@@ -12,8 +12,11 @@ import torch.nn.functional as F
 import torchvision
 from matplotlib import pyplot as plt
 import numpy as np
+import logging
 
 import utils
+
+debug = False
 
 class CNN(nn.Module):
     # Output width = ((input width − kernel width + 2 × padding width) / stride) + 1
@@ -26,81 +29,79 @@ class CNN(nn.Module):
             self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1)
             self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=0)
             self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
-            self.fc1 = nn.Linear(in_features=16*6*6, out_features=320)
             #raise NotImplementedError
         else:
             # Implementation for Q2.2
             self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=2, padding=1)
             self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=2, padding=0)
-            self.fc1 = nn.Linear(in_features=16*1*2, out_features=320)
             #raise NotImplementedError
         
         # Implementation for Q2.1 and Q2.2
         
         self.drop = nn.Dropout(p=dropout_prob)
+        self.fc1 = nn.Linear(in_features=16*6*6, out_features=320)
         self.fc2 = nn.Linear(in_features=320, out_features=120)
         self.fc3 = nn.Linear(in_features=120, out_features=10)
         #raise NotImplementedError
         
     def forward(self, x):
         # initial shape: [8, 1, 28, 28]
-        #print('Initial shape: ', x.shape)
+        if debug: print('1º shape: ', x.shape)
 
         # input should be of shape [b, c, w, h]
 
         x = x.reshape((x.shape[0], 1, 28, 28))
-        #print('Second shape: ', x.shape)
+        if debug: print('2º shape: ', x.shape)
 
         # conv and relu layers
         x = F.relu(self.conv1(x))
-        #print('Third shape: ', x.shape)
+        if debug: print('3º shape: ', x.shape)
         
         # Convolution with 3x3 filter with padding (1) and 8 channels =>
         #    x.shape = [8, 8, 28, 28] since 28 = 28 - 3 + 1 + 2 * 1
-        #    x.shape = [8, 8, _, _] since 28 = ((28 - 3 + 2 * 1) / 2) + 1
+        #    x.shape = [8, 8, 14, 14] since 14 = ((28 - 3 + 2 * 1) / 2) + 1 <does floor oper>
         # max-pool layer if using it
         if not self.no_maxpool:
             x = self.max_pool(x)
-            #print('Forth shape: ', x.shape)
+            if debug: print('4º shape: ', x.shape)
             # Max pooling with stride of 2 =>
             #     x.shape = [8, 8, 14, 14]
-            #raise NotImplementedError
         
         # conv and relu layers
         x = F.relu(self.conv2(x))
+        if debug: print('5º shape: ', x.shape)
         #print('Fiveth shape: ', x.shape)
         # With max pool:
         #   Convolution with 3x3 filter with padding and 8 channels =>
         #         x.shape = [8, 16, 12, 12] since 12
         # Without max pool:
         #   Convolution with 3x3 filter with padding and 8 channels =>
-        #         x.shape = [8, 16, 28, 28] since _ = ((28 - 3 + 2 * 0) / 2) + 1
+        #         x.shape = [8, 16, 6, 6] since 6 = ((14 - 3 + 2 * 0) / 2) + 1 <does floor oper>
 
         # max-pool layer if using it
         if not self.no_maxpool:
             x = self.max_pool(x)
-            #print('Sixth shape: ', x.shape)
+            if debug: print('6º shape: ', x.shape)
             # Max pooling with stride of 2 =>
             #     x.shape = [8, 8, 6, 6]
-            #raise NotImplementedError
         
         # prep for fully connected layer + relu
         x = x.view(-1, x.shape[1]*x.shape[2]*x.shape[3])
         x = F.relu(self.fc1(x))
-        #print('Sevend shape: ', x.shape)
+        if debug: print('7º shape: ', x.shape)
         
         # drop out
         x = self.drop(x)
-        #print('Eight shape: ', x.shape)
+        if debug: print('8º shape: ', x.shape)
 
         # second fully connected layer + relu
         x = F.relu(self.fc2(x))
-        #print('Nineth shape: ', x.shape)
+        if debug: print('9º shape: ', x.shape)
         
         # last fully connected layer
         x = self.fc3(x)
-        #print('Semi-final shape: ', x.shape)
-        
+        if debug: print('10º shape: ', x.shape)
+
         return F.log_softmax(x,dim=1)
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
